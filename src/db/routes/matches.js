@@ -37,6 +37,11 @@ MatchRouter.post('/',  async (req, res) => {
             status: getMatchStatus(startTime, endTime),
             createdAt: new Date(),
         }).returning();
+
+        if(res.app.locals.broadcastMatchCreated){
+            res.app.locals.broadcastMatchCreated(event);
+        }
+
         res.status(201).json({data: event});
     } catch(e){
         res.status(500).json({error: 'internal server error.', details: parsed.error.issues});
