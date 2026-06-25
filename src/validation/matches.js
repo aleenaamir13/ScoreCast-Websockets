@@ -6,43 +6,44 @@ export const MATCH_STATUS = {
   FINISHED: 'finished',
 };
 
-const nonEmptyStringSchema = z.string().trim().min(1, 'Value must not be empty');
-const isoDateStringSchema = z.string().trim().refine((value) => !Number.isNaN(Date.parse(value)), {
-  message: 'Value must be a valid ISO date string',
+import { z } from 'zod';
+
+export const listCommentaryQuerySchema = z.object({
+  limit: z.coerce.number().int().positive().max(100).optional(),
 });
 
-export const listMatchesQuerySchema = z.object({
-  limit: z.coerce.number().int().positive().max(100).optional(),
+export const createCommentarySchema = z.object({
+  minute: z.number().int().nonnegative(),
+  sequence: z.number().int().optional(),
+  period: z.string().optional(),
+  eventType: z.string().optional(),
+  actor: z.string().optional(),
+  team: z.string().optional(),
+  message: z.string().min(1),
+  metadata: z.record(z.string(), z.any()).optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 export const matchIdParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
 
-export const createMatchSchema = z
-  .object({
-    sport: nonEmptyStringSchema,
-    homeTeam: nonEmptyStringSchema,
-    awayTeam: nonEmptyStringSchema,
-    startTime: isoDateStringSchema,
-    endTime: isoDateStringSchema,
-    homeScore: z.coerce.number().int().nonnegative().optional(),
-    awayScore: z.coerce.number().int().nonnegative().optional(),
-  })
-  .superRefine((data, context) => {
-    const startTime = Date.parse(data.startTime);
-    const endTime = Date.parse(data.endTime);
-
-    if (!Number.isNaN(startTime) && !Number.isNaN(endTime) && endTime <= startTime) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'endTime must be after startTime',
-        path: ['endTime'],
-      });
-    }
-  });
-
-export const updateScoreSchema = z.object({
-  homeScore: z.coerce.number().int().nonnegative(),
-  awayScore: z.coerce.number().int().nonnegative(),
+export const createMatchSchema = z.object({
+  sport: z.string().min(1),
+  homeTeam: z.string().min(1),
+  awayTeam: z.string().min(1),
+  startTime: z.iso.datetime(),
+  endTime: z.iso.datetime(),
+  homeScore: z.coerce.number().int().nonnegative().optional(),
+  awayScore: z.coerce.number().int().nonnegative().optional(),
+}).superRefine((data, ctx) => {
+  const start = new Date(data.startTime);
+  const end = new Date(data.endTime);
+  if (end <= start) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "endTime must be chronologically after startTime",
+      path: ["endTime"],
+    });
+  }
 });
