@@ -1,5 +1,9 @@
-import {Router} from "express";
-import { $constructor } from "zod/v4/core";
+import { Router } from "express";
+import { createMatchSchema, listMatchesQuerySchema } from "../../validation/matches.js";
+import { matches } from "../schema.js";
+import { db } from "../db.js";
+import { getMatchStatus } from "../../utils/match-status.js";
+import { desc } from "drizzle-orm";
 
 export const MatchRouter = Router();
 
@@ -7,43 +11,51 @@ const MAX_LIMIT = 100;
 
 MatchRouter.get('/', async (req, res) => {
   const parsed = listMatchesQuerySchema.safeParse(req.query);
+
   if (!parsed.success) {
     return res.status(400).json({error: 'invalid query.', details:parsed.error.issues});
   }
-  const limit= parsed.data.limit ?? MAX_LIMIT;
-  try{
-    const data=await db.select().from(matches).orderBy(desc(matches.createdAt)).limit(limit);
-    res.json({data});
-  }catch(e){
-    res.status(500).json({error: 'Failed to list matches.', details:parsed.error.issues});
-  }
-});
 
-MatchRouter.post('/',  async (req, res) => {
-    const parsed=createMatchSchema.safeParse(req.body);
+   const limit = Math.min(parsed.data.limit ?? 50, MAX_LIMIT);
 
-    if(!parsed.success){
-        return res.status(400).json({error: 'invalid payload.', details:parsed.error.issues});
+  try {
+        const data = await db
+            .select()
+            .from(matches)
+            .orderBy((desc(matches.createdAt)))
+            .limit(limit)
+
+        res.json({ data });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to list matches.' });
+    }
+})
+
+MatchRouter.post('/', async (req, res) => {
+    const parsed = createMatchSchema.safeParse(req.body);
+
+    if(!parsed.success) {
+        return res.status(400).json({ error: 'Invalid payload.', details: parsed.error.issues });
     }
 
-    const {data:{startTime,endTime,homeScore,awayScore}}=parsed
-    try{
-        const event=await db.insert(matches).values({
+    const { data: { startTime, endTime, homeScore, awayScore } } = parsed;
+
+    try {
+        const [event] = await db.insert(matches).values({
             ...parsed.data,
             startTime: new Date(startTime),
             endTime: new Date(endTime),
             homeScore: homeScore ?? 0,
             awayScore: awayScore ?? 0,
             status: getMatchStatus(startTime, endTime),
-            createdAt: new Date(),
         }).returning();
 
-        if(res.app.locals.broadcastMatchCreated){
+        if(res.app.locals.broadcastMatchCreated) {
             res.app.locals.broadcastMatchCreated(event);
         }
 
-        res.status(201).json({data: event});
-    } catch(e){
-        res.status(500).json({error: 'internal server error.', details: parsed.error.issues});
+        res.status(201).json({ data: event });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to create match.', details: JSON.stringify(e) });
     }
-});
+})
