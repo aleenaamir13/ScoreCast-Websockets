@@ -34,6 +34,6 @@ A secure and scalable backend for a real-time sports match tracking application 
 
 ### Site24x7 Monitoring
 ```md
-![Site24x7](C:\Users\DELL\OneDrive\Pictures\Screenshots\Screenshot(573).png)
+<img src="C:/Users/DELL/Pictures/image.png" width="800">
 ```
 
