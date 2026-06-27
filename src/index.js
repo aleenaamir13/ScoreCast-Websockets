@@ -1,3 +1,6 @@
+import AgentAPI from 'apminsightnode';
+AgentAPI.config();
+
 import express from 'express';
 import http from 'http';
 import { MatchRouter } from './db/routes/matches.js';
