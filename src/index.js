@@ -1,4 +1,4 @@
-import AgentAPI from 'apminsightnode';
+import AgentAPI from 'apminsight';
 AgentAPI.config();
 
 import express from 'express';
@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Hello from Express Server!' });
 });
 
-app.use(securityMiddleware());
+//app.use(securityMiddleware());
 app.use('/matches', MatchRouter);
 app.use('/matches/:id/commentary', CommentaryRouter);
 
