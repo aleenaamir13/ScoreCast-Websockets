@@ -18,7 +18,7 @@ const server=http.createServer(app);
 // CORS middleware 
 app.use(
   cors({
-    origin: "https://6a3fc69863e3140008ab0c51--stirring-longma-379fc1.netlify.app/",
+    origin: "https://6a3fc69863e3140008ab0c51--scorecast-ws.netlify.app/",
     credentials: true,
   })
 );
