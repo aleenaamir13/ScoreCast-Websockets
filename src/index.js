@@ -16,12 +16,22 @@ const app = express();
 const server=http.createServer(app);
 
 // CORS middleware 
-app.use(
-  cors({
-    origin: "https://6a3fc69863e3140008ab0c51--scorecast-ws.netlify.app/",
-    credentials: true,
-  })
-);
+const allowedOrigins = [
+  "http://localhost:5174",
+  "https://6a3fccc7494cc866b75dcb6b--scorecast-ws.netlify.app",
+  "https://scorecast-ws.netlify.app" // if you also use the custom domain
+];
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
 
 app.use(express.json());
 
