@@ -17,9 +17,8 @@ const server=http.createServer(app);
 
 // CORS middleware 
 const allowedOrigins = [
-  "http://localhost:5174",
-  "https://6a3fccc7494cc866b75dcb6b--scorecast-ws.netlify.app",
-  "https://scorecast-ws.netlify.app" // if you also use the custom domain
+  "https://6a3fcec0619022673e74cff5--scorecast-ws.netlify.app",
+  "https://scorecast-ws.netlify.app"
 ];
 
 app.use(cors({
