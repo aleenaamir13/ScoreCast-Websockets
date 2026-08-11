@@ -17,7 +17,7 @@ const server=http.createServer(app);
 
 // CORS middleware 
 const allowedOrigins = [
-  "https://6a3fcec0619022673e74cff5--scorecast-ws.netlify.app",
+  "https://score-cast-websockets.vercel.app/",
   "https://scorecast-ws.netlify.app"
 ];
 
